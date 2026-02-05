@@ -1,6 +1,6 @@
 Titre du projet : FlyPrice
 
-Team : Roua Tabarki / Saif sbaiti / Yossri karchoud
+Team : Roua Tabarki / Saif sbaiti / Yossri karchoud / Ayette mansouri
 
 Objectif : 
 - Prédiction du prix de vol
