@@ -1,3 +1,5 @@
+# dataset_extended.py
+# Plan B Extended : Dataset massif avec plus de données
 
 import pandas as pd
 import random
@@ -31,12 +33,14 @@ def generate_massive_flight_dataset(target_size=100000):
     Génère un dataset massif de vols internationaux avec distance de vol.
     """
     print("=" * 70)
-    print("📥 GÉNÉRATION DATASET MASSIF")
+    print(" GÉNÉRATION DATASET MASSIF")
     print("=" * 70)
 
+    # -------------------------------------------------------------------------
+    # 1. CHARGER TOUTES LES DONNÉES SOURCE
+    # -------------------------------------------------------------------------
 
-
-    print("\n Chargement des données sources...")
+    print("\n1️⃣  Chargement des données sources...")
 
     routes = pd.read_csv(
         'https://raw.githubusercontent.com/jpatokal/openflights/master/data/routes.dat',
@@ -63,7 +67,7 @@ def generate_massive_flight_dataset(target_size=100000):
     print(f"   ✓ {len(airlines):,} compagnies")
 
 
-    print("\n2 Préparation des mappings...")
+    print("\n2️⃣  Préparation des mappings...")
 
     airports_valid = airports[
         (airports['iata'] != '\\N') & 
@@ -90,7 +94,7 @@ def generate_massive_flight_dataset(target_size=100000):
             }
 
 
-    print("\n  Filtrage des routes internationales...")
+    print("\n3️⃣  Filtrage des routes internationales...")
 
     def enrich_route(row):
         src = row['source']
@@ -127,7 +131,7 @@ def generate_massive_flight_dataset(target_size=100000):
             'destination_country': dst_info['country'],
             'dest_lat': dst_info['lat'],
             'dest_lon': dst_info['lon'],
-            'distance_km': distance_km,  
+            'distance_km': distance_km,  # ⭐ DISTANCE AJOUTÉE ICI
             'num_stops': 0 if row['stops'] == 0 else int(row['stops']),
             'aircraft': row['equipment'] if pd.notna(row['equipment']) else 'Unknown'
         }
@@ -142,14 +146,17 @@ def generate_massive_flight_dataset(target_size=100000):
     routes_df = pd.DataFrame(enriched)
     print(f"   ✓ {len(routes_df):,} routes internationales valides")
 
+    # Statistiques sur les distances
     print(f"\n   📏 DISTANCES :")
     print(f"   • Distance moyenne: {routes_df['distance_km'].mean():.0f} km")
     print(f"   • Distance min: {routes_df['distance_km'].min():.0f} km")
     print(f"   • Distance max: {routes_df['distance_km'].max():.0f} km")
 
+    # -------------------------------------------------------------------------
+    # 4. GÉNÉRER MULTIPLES VOLS PAR ROUTE
+    # -------------------------------------------------------------------------
 
-
-    print(f"\n  Génération de {target_size:,} vols uniques...")
+    print(f"\n4️⃣  Génération de {target_size:,} vols uniques...")
 
     n_routes = len(routes_df)
     multiplier = (target_size // n_routes) + 1
@@ -179,13 +186,14 @@ def generate_massive_flight_dataset(target_size=100000):
             if distance_km <= 0:
                 return "Unknown", 0
 
-            if distance_km < 500:  
+            # Vitesse moyenne 900 km/h + variation selon la distance
+            if distance_km < 500:  # Vol court
                 speed = random.uniform(700, 800)
                 taxi_time = random.uniform(0.5, 0.8)
             elif distance_km < 2000:  
                 speed = random.uniform(850, 950)
                 taxi_time = random.uniform(0.8, 1.2)
-            else: 
+            else:  # Vol long
                 speed = random.uniform(900, 1000)
                 taxi_time = random.uniform(1.0, 1.5)
 
@@ -203,11 +211,11 @@ def generate_massive_flight_dataset(target_size=100000):
             cabin = random.choice(cabin_classes)
 
             if distance < 500:
-                base_rate = random.uniform(0.20, 0.40)  
+                base_rate = random.uniform(0.20, 0.40)  # Vols courts plus chers au km
             elif distance < 2000:
                 base_rate = random.uniform(0.10, 0.20)
             else:
-                base_rate = random.uniform(0.05, 0.12) 
+                base_rate = random.uniform(0.05, 0.12)  # Vols longs moins chers au km
 
             base_price = distance * base_rate if distance > 0 else random.uniform(200, 500)
 
@@ -229,9 +237,9 @@ def generate_massive_flight_dataset(target_size=100000):
 
             date_obj = datetime.strptime(row['flight_date'], '%Y-%m-%d')
             month = date_obj.month
-            if month in [6, 7, 8, 12]:  
+            if month in [6, 7, 8, 12]:  # Été et Noël
                 season_mult = random.uniform(1.2, 1.8)
-            elif month in [1, 2, 3, 11]: 
+            elif month in [1, 2, 3, 11]:  # Basse saison
                 season_mult = random.uniform(0.7, 0.9)
             else:
                 season_mult = random.uniform(0.9, 1.2)
@@ -270,6 +278,9 @@ def generate_massive_flight_dataset(target_size=100000):
     if len(final_df) > target_size:
         final_df = final_df.sample(n=target_size, random_state=42)
 
+    # -------------------------------------------------------------------------
+    # 5. NETTOYER ET FORMATER
+    # -------------------------------------------------------------------------
 
     print("\n  Nettoyage final...")
 
@@ -284,12 +295,12 @@ def generate_massive_flight_dataset(target_size=100000):
         'destination_airport',
         'destination_city',
         'destination_country',
-        'distance_km',          
+        'distance_km',           # ⭐ DISTANCE ICI
         'flight_date',
         'departure_hour',
         'departure_minute',
         'flight_duration',
-        'duration_hours',       
+        'duration_hours',        # ⭐ Durée numérique pour calculs
         'num_stops',
         'cabin_class',
         'fare_type',
@@ -311,7 +322,7 @@ def generate_massive_flight_dataset(target_size=100000):
         'dest_airport',
         'dest_city',
         'dest_country',
-        'distance_km',        
+        'distance_km',           # ⭐ DISTANCE EN KM
         'flight_date',
         'departure_hour',
         'departure_minute',
@@ -341,35 +352,38 @@ def generate_massive_flight_dataset(target_size=100000):
 
     final_df['flight_category'] = final_df['distance_km'].apply(categorize_distance)
 
+    # -------------------------------------------------------------------------
+    # 6. STATISTIQUES FINALES
+    # -------------------------------------------------------------------------
 
     print("\n" + "=" * 70)
-    print("DATASET CRÉÉ AVEC SUCCÈS")
+    print("✅ DATASET CRÉÉ AVEC SUCCÈS")
     print("=" * 70)
 
     print(f"\n DIMENSIONS : {len(final_df):,} vols × {len(final_df.columns)} colonnes")
 
-    print(f"\n STATISTIQUES DE DISTANCE :")
-    print(f"  Distance moyenne: {final_df['distance_km'].mean():.0f} km")
-    print(f"  Distance médiane: {final_df['distance_km'].median():.0f} km")
-    print(f"  Distance min: {final_df['distance_km'].min():.0f} km")
-    print(f"  Distance max: {final_df['distance_km'].max():.0f} km")
+    print(f"\n📏 STATISTIQUES DE DISTANCE :")
+    print(f"   • Distance moyenne: {final_df['distance_km'].mean():.0f} km")
+    print(f"   • Distance médiane: {final_df['distance_km'].median():.0f} km")
+    print(f"   • Distance min: {final_df['distance_km'].min():.0f} km")
+    print(f"   • Distance max: {final_df['distance_km'].max():.0f} km")
 
     print(f"\n CATÉGORIES DE VOL :")
     print(final_df['flight_category'].value_counts().to_string())
 
-    print(f"\n COUVERTURE GÉOGRAPHIQUE :")
-    print(f"   Pays d'origine : {final_df['origin_country'].nunique()}")
-    print(f"   Pays destination : {final_df['dest_country'].nunique()}")
-    print(f"   Villes d'origine : {final_df['origin_city'].nunique()}")
-    print(f"   Aéroports : {final_df['origin_airport'].nunique()}")
+    print(f"\n🌍 COUVERTURE GÉOGRAPHIQUE :")
+    print(f"   • Pays d'origine : {final_df['origin_country'].nunique()}")
+    print(f"   • Pays destination : {final_df['dest_country'].nunique()}")
+    print(f"   • Villes d'origine : {final_df['origin_city'].nunique()}")
+    print(f"   • Aéroports : {final_df['origin_airport'].nunique()}")
 
-    print(f"\n COMPAGNIES :")
-    print(f"  Nombre de compagnies : {final_df['airline'].nunique()}")
-    print(f"  Top 5 :")
+    print(f"\n✈️ COMPAGNIES :")
+    print(f"   • Nombre de compagnies : {final_df['airline'].nunique()}")
+    print(f"   • Top 5 :")
     for airline, count in final_df['airline'].value_counts().head(5).items():
         print(f"     - {airline}: {count:,} vols")
 
-    print(f"\n  PRIX (USD) :")
+    print(f"\n💰 PRIX (USD) :")
     price_stats = final_df['price_usd'].describe()
     print(f"   Min: ${price_stats['min']:.2f}")
     print(f"   Max: ${price_stats['max']:.2f}")
@@ -399,7 +413,7 @@ def generate_massive_flight_dataset(target_size=100000):
         avg_dist = final_df[(final_df['origin_city'] == orig) & (final_df['dest_city'] == dest)]['distance_km'].mean()
         print(f"   {orig} → {dest}: {count:,} vols (avg {avg_dist:.0f} km)")
 
-    print(f"\n  TOP 10 VOLS LES PLUS CHERS :")
+    print(f"\n💸 TOP 10 VOLS LES PLUS CHERS :")
     expensive = final_df.nlargest(10, 'price_usd')[['origin_city', 'origin_country', 
                                                      'dest_city', 'dest_country',
                                                      'distance_km', 'airline', 'cabin_class', 'price_usd']]
@@ -411,7 +425,11 @@ def generate_massive_flight_dataset(target_size=100000):
                                                   'distance_km', 'airline', 'cabin_class', 'price_usd']]
     print(cheap.to_string())
 
+    # -------------------------------------------------------------------------
+    # 7. SAUVEGARDE
+    # -------------------------------------------------------------------------
 
+    # CSV principal
     filename = f'flights_dataset_{len(final_df)}.csv'
     final_df.to_csv(filename, index=False, encoding='utf-8-sig')
     print(f"\n FICHIER PRINCIPAL : {filename}")
@@ -446,4 +464,6 @@ if __name__ == "__main__":
     print("  • CSV complet avec distances (100k+ vols)")
     print("  • Excel (10k vols, facile à ouvrir)")
     print("  • JSON (5k vols, pour développeurs)")
+
     print("  • Stats par catégorie de distance")
+
