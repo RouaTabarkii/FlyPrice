@@ -4,8 +4,8 @@ Team : Roua Tabarki / Saif sbaiti / Yossri karchoud / Ayette mansouri
 
 Objectif :
 
-Prédiction du prix de vol
-ChatBot
+  - Prédiction du prix de vol
+  - ChatBot
 
 Frameworks utilisées :
 
