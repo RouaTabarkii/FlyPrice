@@ -11,4 +11,4 @@ Frameworks utilisées :
 - BackEnd : FastAPI
 - FrontEnd : React
 
-Web scarping : https://openflights.org/#google_vignette
+Récupération des données : https://github.com/jpatokal/openflights/tree/master/data
