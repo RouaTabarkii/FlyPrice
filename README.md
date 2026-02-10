@@ -9,9 +9,9 @@ ChatBot
 
 Frameworks utilisées :
 
-BackEnd : FastAPI
+  - BackEnd : FastAPI
 
-FrontEnd : React
+  - FrontEnd : React 
 
 Récupération des données : https://github.com/jpatokal/openflights/tree/master/data
 
