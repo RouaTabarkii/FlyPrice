@@ -11,4 +11,4 @@ Frameworks utilisées :
 - BackEnd : FastAPI
 - FrontEnd : React
 
-Web scarping : https://www.kayak.com/flight-routes/Seattle-Tacoma-Intl-SEA/Mumbai-Chhatrapati-Shivaji-BOM
+Web scarping : https://openflights.org/#google_vignette
