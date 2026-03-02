@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Recommendations</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .navbar h1 { font-size: 1.5em; }
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+        .nav-links a:hover, .nav-links a.active {
+            background: rgba(255,255,255,0.2);
+        }
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+        .page-title {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .page-subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .search-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        input, select {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .results-container {
+            display: grid;
+            gap: 20px;
+        }
+        .flight-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 20px;
+            align-items: center;
+        }
+        @media (max-width: 768px) {
+            .flight-card { grid-template-columns: 1fr; }
+            .navbar { flex-direction: column; gap: 15px; }
+        }
+        .flight-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .airline-logo {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .flight-number {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+        .airline-name {
+            color: #666;
+        }
+        .route {
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .flight-details {
+            display: flex;
+            gap: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+        .flight-details span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .price-section {
+            text-align: right;
+        }
+        .price {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .score-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+        }
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>✈️ Flight Price Predictor</h1>
+        <div class="nav-links">
+            <a href="app.html">Dashboard</a>
+            <a href="prediction.html">Prediction</a>
+            <a href="recommendations.html" class="active">Recommendations</a>
+            <a href="chatbot.html">Chatbot</a>
+        </div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </nav>
+
+    <div class="container">
+        <h1 class="page-title">✈️ Flight Recommendations</h1>
+        <p class="page-subtitle">Find the best flights tailored to your preferences</p>
+
+        <div class="search-card">
+            <h3 style="margin-bottom: 20px; color: #333;">🔍 Search Flights</h3>
+            
+            <div class="popular-routes">
+                <h4>Popular Routes (click to auto-fill):</h4>
+                <div class="routes-container">
+                    <button class="route-badge" onclick="setRoute('New York', 'Los Angeles')">New York → Los Angeles</button>
+                    <button class="route-badge" onclick="setRoute('London', 'New York')">London → New York</button>
+                    <button class="route-badge" onclick="setRoute('Paris', 'Tokyo')">Paris → Tokyo</button>
+                    <button class="route-badge" onclick="setRoute('Dubai', 'London')">Dubai → London</button>
+                    <button class="route-badge" onclick="setRoute('Singapore', 'Sydney')">Singapore → Sydney</button>
+                    <button class="route-badge" onclick="setRoute('Berlin', 'Rome')">Berlin → Rome</button>
+                </div>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Origin City</label>
+                    <select id="origin_city" onchange="updateDistance()">
+                        <option value="">Select origin...</option>
+                        <option value="New York">New York, USA</option>
+                        <option value="Los Angeles">Los Angeles, USA</option>
+                        <option value="London">London, UK</option>
+                        <option value="Paris">Paris, France</option>
+                        <option value="Tokyo">Tokyo, Japan</option>
+                        <option value="Dubai">Dubai, UAE</option>
+                        <option value="Singapore">Singapore</option>
+                        <option value="Sydney">Sydney, Australia</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Destination City</label>
+                    <select id="dest_city" onchange="updateDistance()">
+                        <option value="">Select destination...</option>
+                        <option value="New York">New York, USA</option>
+                        <option value="Los Angeles">Los Angeles, USA</option>
+                        <option value="London">London, UK</option>
+                        <option value="Paris">Paris, France</option>
+                        <option value="Tokyo">Tokyo, Japan</option>
+                        <option value="Dubai">Dubai, UAE</option>
+                        <option value="Singapore">Singapore</option>
+                        <option value="Sydney">Sydney, Australia</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Departure Date</label>
+                    <input type="date" id="departure_date">
+                </div>
+                <div class="form-group">
+                    <label>Trip Type</label>
+                    <select id="trip_type">
+                        <option value="one-way">One Way</option>
+                        <option value="round-trip">Round Trip</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Passengers</label>
+                    <input type="number" id="passengers" value="1" min="1" max="9">
+                </div>
+                <div class="form-group">
+                    <label>Max Budget ($)</label>
+                    <input type="number" id="max_budget" value="2000" min="50">
+                </div>
+            </div>
+            <button class="btn" id="search-btn" onclick="searchFlights()">Search Flights</button>
+            <div id="error" class="error hidden"></div>
+        </div>
+
+        <div id="loading" class="loading hidden">Searching for flights...</div>
+        <div id="results" class="results-container"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+
+        const cityData = {
+            'New York': { lat: 40.7128, lon: -74.0060, airport: 'JFK', country: 'USA' },
+            'Los Angeles': { lat: 34.0522, lon: -118.2437, airport: 'LAX', country: 'USA' },
+            'London': { lat: 51.5074, lon: -0.1278, airport: 'LHR', country: 'UK' },
+            'Paris': { lat: 48.8566, lon: 2.3522, airport: 'CDG', country: 'France' },
+            'Tokyo': { lat: 35.6762, lon: 139.6503, airport: 'NRT', country: 'Japan' },
+            'Dubai': { lat: 25.2048, lon: 55.2708, airport: 'DXB', country: 'UAE' },
+            'Singapore': { lat: 1.3521, lon: 103.8198, airport: 'SIN', country: 'Singapore' },
+            'Sydney': { lat: -33.8688, lon: 151.2093, airport: 'SYD', country: 'Australia' }
+        };
+
+        if (!localStorage.getItem('authToken')) {
+            window.location.href = '/index.html';
+        }
+
+        function logout() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('username');
+            window.location.href = '/index.html';
+        }
+
+        function setRoute(origin, dest) {
+            document.getElementById('origin_city').value = origin;
+            document.getElementById('dest_city').value = dest;
+            updateDistance();
+        }
+
+        function updateDistance() {
+            const origin = document.getElementById('origin_city').value;
+            const dest = document.getElementById('dest_city').value;
+        }
+
+        function showError(msg) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = msg;
+            errorDiv.classList.remove('hidden');
+        }
+
+        function hideError() {
+            document.getElementById('error').classList.add('hidden');
+        }
+
+        function setLoading(loading) {
+            document.getElementById('loading').classList.toggle('hidden', !loading);
+            document.getElementById('search-btn').disabled = loading;
+        }
+
+        async function searchFlights() {
+            hideError();
+            setLoading(true);
+            document.getElementById('results').innerHTML = '';
+
+            const origin = document.getElementById('origin_city').value;
+            const dest = document.getElementById('dest_city').value;
+
+            if (!origin || !dest) {
+                showError('Please select both origin and destination cities');
+                setLoading(false);
+                return;
+            }
+
+            if (origin === dest) {
+                showError('Origin and destination cannot be the same city');
+                setLoading(false);
+                return;
+            }
+
+            const originData = cityData[origin];
+            const destData = cityData[dest];
+            const passengers = parseInt(document.getElementById('passengers').value);
+            const tripType = document.getElementById('trip_type').value;
+
+            const data = {
+                origin_airport: originData.airport,
+                dest_airport: destData.airport,
+                budget_max: parseFloat(document.getElementById('max_budget').value) || undefined,
+                cabin_class: document.getElementById('cabin_class')?.value || undefined
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/recommend/recommend`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+
+                if (response.ok) {
+                    if (result.recommendations.length === 0) {
+                        document.getElementById('results').innerHTML = `
+                            <div class="no-results">
+                                <h3>No flights found</h3>
+                                <p>Try adjusting your search criteria or budget</p>
+                            </div>
+                        `;
+                    } else {
+                        document.getElementById('results').innerHTML = result.recommendations.map(flight => {
+                            const totalPrice = flight.price_usd * passengers * (tripType === 'round-trip' ? 2 : 1);
+                            return `
+                            <div class="flight-card">
+                                <div>
+                                    <div class="flight-header">
+                                        <div class="airline-logo">${flight.airline.substring(0, 2).toUpperCase()}</div>
+                                        <div>
+                                            <div class="flight-number">${flight.flight_number}</div>
+                                            <div class="airline-name">${flight.airline}</div>
+                                        </div>
+                                        <span class="cabin-badge">${flight.cabin_class}</span>
+                                    </div>
+                                    <div class="timeline">
+                                        <div class="time-point">
+                                            <div class="time">${flight.departure_time}</div>
+                                            <div class="city">${origin}</div>
+                                        </div>
+                                        <div class="flight-line"></div>
+                                        <div class="time-point">
+                                            <div class="time">${flight.arrival_time}</div>
+                                            <div class="city">${dest}</div>
+                                        </div>
+                                    </div>
+                                    <div class="duration-badge">${flight.duration} • ${flight.stops === 0 ? 'Direct' : flight.stops + ' stop' + (flight.stops > 1 ? 's' : '')}</div>
+                                    <div class="flight-details">
+                                        <span class="detail-item">✈️ ${flight.aircraft_type}</span>
+                                        <span class="detail-item">💺 ${flight.seats_available} seats left</span>
+                                    </div>
+                                </div>
+                                <div class="price-section">
+                                    <div class="price">$${flight.price_usd.toFixed(0)}</div>
+                                    <div class="per-person">per person</div>
+                                    <div class="total-price">Total: $${totalPrice.toFixed(2)} ${tripType === 'round-trip' ? '(Round Trip)' : ''}</div>
+                                    <div class="score-badge">Score: ${flight.score.toFixed(0)}/100</div>
+                                    <button class="book-btn" onclick="alert('Selected: ${flight.flight_number}')">Select Flight</button>
+                                </div>
+                            </div>
+                        `}).join('');
+                    }
+                } else {
+                    showError(result.detail || 'Search failed. Please try again.');
+                }
+            } catch (error) {
+                showError('Connection error: ' + error.message);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Set default date
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        document.getElementById('departure_date').value = tomorrow.toISOString().split('T')[0];
+    </script>
+</body>
+</html>
