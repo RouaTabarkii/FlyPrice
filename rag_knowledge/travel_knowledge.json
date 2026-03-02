@@ -1,0 +1,107 @@
+[
+  {
+    "text": "Flight booking tips: Book flights 6-8 weeks in advance for domestic travel and 2-3 months for international travel to get the best prices. Tuesday and Wednesday departures are often cheaper.",
+    "metadata": {
+      "category": "booking_tips",
+      "topic": "timing"
+    }
+  },
+  {
+    "text": "Packing essentials: Always pack medications, important documents, and a change of clothes in your carry-on. Check airline baggage policies for weight limits and restrictions.",
+    "metadata": {
+      "category": "packing",
+      "topic": "essentials"
+    }
+  },
+  {
+    "text": "Airport security: Arrive at least 2 hours early for domestic flights and 3 hours for international flights. Have your ID and boarding pass ready. Follow TSA liquid rules (3.4oz/100ml containers).",
+    "metadata": {
+      "category": "airport",
+      "topic": "security"
+    }
+  },
+  {
+    "text": "Travel insurance: Consider travel insurance for expensive trips, international travel, or if you have pre-existing medical conditions. It can cover trip cancellations, medical emergencies, and lost luggage.",
+    "metadata": {
+      "category": "insurance",
+      "topic": "coverage"
+    }
+  },
+  {
+    "text": "Flight classes: Economy class offers basic seating and service. Premium Economy provides more legroom and better service. Business class includes lie-flat seats, priority boarding, and premium meals. First class offers luxury amenities and personalized service.",
+    "metadata": {
+      "category": "flight_info",
+      "topic": "classes"
+    }
+  },
+  {
+    "text": "Layover tips: For international connections, allow at least 2 hours between flights. Consider airport lounges for long layovers. Some cities offer free city tours during extended layovers.",
+    "metadata": {
+      "category": "connections",
+      "topic": "layovers"
+    }
+  },
+  {
+    "text": "Travel documents: Ensure your passport is valid for at least 6 months beyond your travel dates. Check visa requirements for your destination. Make copies of important documents.",
+    "metadata": {
+      "category": "documents",
+      "topic": "requirements"
+    }
+  },
+  {
+    "text": "In-flight comfort: Stay hydrated, move around periodically, and bring noise-canceling headphones. Adjust your sleep schedule before long flights to reduce jet lag.",
+    "metadata": {
+      "category": "inflight",
+      "topic": "comfort"
+    }
+  },
+  {
+    "text": "Budget travel: Consider budget airlines, travel during off-peak seasons, and be flexible with dates. Look for package deals and consider alternative airports near your destination.",
+    "metadata": {
+      "category": "budget",
+      "topic": "savings"
+    }
+  },
+  {
+    "text": "Travel rewards: Sign up for airline loyalty programs and credit card rewards. Use points strategically for free flights and upgrades. Consider status matching programs.",
+    "metadata": {
+      "category": "rewards",
+      "topic": "programs"
+    }
+  },
+  {
+    "text": "Health and safety: Check vaccination requirements for your destination. Pack a basic first-aid kit. Research local emergency numbers and healthcare facilities.",
+    "metadata": {
+      "category": "health",
+      "topic": "safety"
+    }
+  },
+  {
+    "text": "Currency and payments: Notify your bank of travel plans. Use credit cards for better exchange rates. Carry some local currency for small purchases. Avoid airport currency exchanges.",
+    "metadata": {
+      "category": "finance",
+      "topic": "currency"
+    }
+  },
+  {
+    "text": "Accommodation tips: Book accommodations with free cancellation when possible. Read recent reviews. Consider location relative to public transportation. Check for additional fees.",
+    "metadata": {
+      "category": "accommodation",
+      "topic": "booking"
+    }
+  },
+  {
+    "text": "Transportation at destination: Research public transportation options. Consider ride-sharing apps. Rent cars only if necessary and familiar with local driving laws.",
+    "metadata": {
+      "category": "transport",
+      "topic": "local"
+    }
+  },
+  {
+    "text": "Cultural etiquette: Research local customs and dress codes. Learn basic phrases in the local language. Be respectful of religious and cultural sites. Tip appropriately for the region.",
+    "metadata": {
+      "category": "culture",
+      "topic": "etiquette"
+    }
+  }
+]

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Price Predictor - Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .navbar h1 {
+            font-size: 1.5em;
+        }
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+        .nav-links a:hover, .nav-links a.active {
+            background: rgba(255,255,255,0.2);
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+        .card-icon.blue { background: #e3f2fd; }
+        .card-icon.green { background: #e8f5e9; }
+        .card-icon.orange { background: #fff3e0; }
+        .card-icon.purple { background: #f3e5f5; }
+        .card h3 {
+            color: #333;
+            font-size: 1.3em;
+        }
+        .card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        .stats-bar {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        .hidden { display: none !important; }
+        .welcome-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .welcome-banner h2 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        @media (max-width: 768px) {
+            .navbar { flex-direction: column; gap: 15px; }
+            .nav-links { flex-wrap: wrap; justify-content: center; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>✈️ Flight Price Predictor</h1>
+        <div class="nav-links">
+            <a href="app.html" class="active">Dashboard</a>
+            <a href="prediction.html">Prediction</a>
+            <a href="recommendations.html">Recommendations</a>
+            <a href="chatbot.html">Chatbot</a>
+        </div>
+        <div class="user-info">
+            <span id="username">User</span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="welcome-banner">
+            <h2>Welcome back, <span id="welcome-name">User</span>! 👋</h2>
+            <p>Your AI-powered flight intelligence dashboard</p>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat">
+                <div class="stat-value">87%</div>
+                <div class="stat-label">Model Accuracy</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">100K+</div>
+                <div class="stat-label">Flights Analyzed</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">418</div>
+                <div class="stat-label">Airlines</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">1157</div>
+                <div class="stat-label">Airports</div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon blue">🎯</div>
+                    <div>
+                        <h3>Price Prediction</h3>
+                    </div>
+                </div>
+                <p>Predict flight prices with our advanced XGBoost machine learning model. Get accurate price estimates based on route, date, airline, and more.</p>
+                <a href="prediction.html" class="btn">Make Prediction</a>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon green">✈️</div>
+                    <div>
+                        <h3>Smart Recommendations</h3>
+                    </div>
+                </div>
+                <p>Find the best flights based on your preferences. Compare prices, durations, and get personalized recommendations for your journey.</p>
+                <a href="recommendations.html" class="btn">Find Flights</a>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon orange">🤖</div>
+                    <div>
+                        <h3>AI Travel Assistant</h3>
+                    </div>
+                </div>
+                <p>Chat with our AI-powered travel assistant. Get advice on booking, packing, airport procedures, and general travel tips.</p>
+                <a href="chatbot.html" class="btn">Start Chat</a>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon purple">📊</div>
+                    <div>
+                        <h3>Model Performance</h3>
+                    </div>
+                </div>
+                <p>View detailed metrics about our ML models. RMSE: $319, R²: 0.87, MAE: $133. XGBoost, Random Forest, and Linear Regression comparison.</p>
+                <button class="btn" onclick="showModelInfo()">View Details</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+
+        // Check authentication
+        const token = localStorage.getItem('authToken');
+        const username = localStorage.getItem('username');
+
+        if (!token) {
+            window.location.href = '/index.html';
+        } else {
+            document.getElementById('username').textContent = username;
+            document.getElementById('welcome-name').textContent = username;
+        }
+
+        function logout() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('username');
+            window.location.href = '/index.html';
+        }
+
+        function showModelInfo() {
+            alert('Model Performance:\n\n• XGBoost: 87.4% accuracy (R² = 0.8742)\n• RMSE: $319.76\n• MAE: $132.86\n• Features: Distance, Cabin Class, Duration, Stops, etc.');
+        }
+    </script>
+</body>
+</html>
