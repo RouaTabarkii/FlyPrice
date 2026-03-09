@@ -1,0 +1,14 @@
+artifact_uri: file:///c:/Users/moham/Desktop/fly/FlyPrice-main/mlflow_tracking/977363302318645728/6b1a5daa37e842b288edf052368ec43f/artifacts
+end_time: null
+entry_point_name: ''
+experiment_id: '977363302318645728'
+lifecycle_stage: active
+run_id: 6b1a5daa37e842b288edf052368ec43f
+run_name: SVR_Flight_Price_Prediction
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1772484963755
+status: 1
+tags: []
+user_id: talent

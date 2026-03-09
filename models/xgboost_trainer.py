@@ -207,9 +207,9 @@ def main():
     # Initialize and train model
     trainer = FlightPriceXGBoost()
     
-    # Load data (assuming the dataset exists)
+    # Load data (assuming dataset exists)
     try:
-        X, y = trainer.load_and_preprocess_data("flights_dataset_100000.csv")
+        X, y = trainer.load_and_preprocess_data("../flights_dataset_100000.csv")
         results = trainer.train_model(X, y)
         
         # Save model

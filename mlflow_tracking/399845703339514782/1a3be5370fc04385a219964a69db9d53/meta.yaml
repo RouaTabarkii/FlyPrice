@@ -1,0 +1,14 @@
+artifact_uri: file:///c:/Users/moham/Desktop/fly/FlyPrice-main/mlflow_tracking/399845703339514782/1a3be5370fc04385a219964a69db9d53/artifacts
+end_time: 1772485424163
+entry_point_name: ''
+experiment_id: '399845703339514782'
+lifecycle_stage: active
+run_id: 1a3be5370fc04385a219964a69db9d53
+run_name: XGBoost_Flight_Price_Prediction
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1772485419845
+status: 3
+tags: []
+user_id: talent

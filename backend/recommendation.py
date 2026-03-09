@@ -41,7 +41,16 @@ class RecommendationResponse(BaseModel):
     processing_time: float
 
 class FlightRecommendationSystem:
-    def __init__(self, dataset_path: str = "flights_dataset_100000.csv"):
+    def __init__(self, dataset_path: str = None):
+        if dataset_path is None:
+            # Get absolute path to dataset
+            import os
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            dataset_path = os.path.join(base_dir, "flights_dataset_100000.csv")
+        
+        print(f"Looking for dataset at: {dataset_path}")
+        print(f"Dataset exists: {os.path.exists(dataset_path)}")
+        
         self.dataset_path = dataset_path
         self.flights_df = None
         self.load_dataset()

@@ -1,0 +1,504 @@
+================================================================================
+                    ARCHITECTURE COMPLÈTE PROJET ML - GUIDE DE RÉFÉRENCE
+================================================================================
+
+Ce document décrit l'architecture complète du projet de prédiction de churn bancaire
+pour vous permettre de reproduire la même structure avec un thème différent.
+
+================================================================================
+                            1. VUE D'ENSEMBLE DE L'ARCHITECTURE
+================================================================================
+
+Type de projet : Application complète de Machine Learning avec déploiement MLOps
+Pattern architectural : Microservices avec Frontend/Backend séparés
+Thème actuel : Prédiction de churn bancaire
+Adaptabilité : Structure générique pour tout projet de classification
+
+================================================================================
+                            2. STRUCTURE DES RÉPERTOIRES
+================================================================================
+
+📁 Racine du projet
+├── 📁 code/                    # Backend Python - API et ML
+│   ├── app.py                 # API FastAPI principale
+│   ├── data_exploration.py    # Analyse exploratoire
+│   ├── modeling.py            # Entraînement des modèles
+│   └── scraping.py            # Collecte de données
+├── 📁 frontend/               # Application React
+│   ├── 📁 src/               # Code source React
+│   ├── 📁 public/            # Assets statiques
+│   ├── package.json          # Dépendances Node.js
+│   └── vite.config.js        # Configuration Vite
+├── 📁 data/                   # Données et modèles
+│   ├── bank_churn.csv        # Dataset principal
+│   ├── best_model_pipeline.pkl # Modèle entraîné
+│   └── *.png                 # Visualisations
+├── 📁 mlruns/                 # Artifacts MLflow
+├── docker-compose.yml        # Orchestration containers
+├── Dockerfile.backend        # Container Backend
+├── Dockerfile.frontend       # Container Frontend
+├── requirements.txt          # Dépendances Python
+└── mlflow.db                 # Base MLflow SQLite
+
+================================================================================
+                            3. ARCHITECTURE BACKEND (FASTAPI)
+================================================================================
+
+3.1 STRUCTURE PRINCIPALE
+------------------------
+Framework : FastAPI 0.104+
+Serveur : Uvicorn
+Port : 8000
+Pattern : API RESTful
+
+3.2 COMPOSANTS API
+------------------
+Fichier : app.py
+├── Imports essentiels :
+│   ├── FastAPI, HTTPException, UploadFile, File
+│   ├── CORSMiddleware (pour communication frontend)
+│   ├── BaseModel (Pydantic pour validation)
+│   ├── pandas, joblib, io, os
+├── Configuration CORS :
+│   ├── allow_origins=["*"] (adapter pour production)
+│   ├── allow_credentials=True
+│   ├── allow_methods=["*"]
+│   └── allow_headers=["*"]
+├── Chargement modèle :
+│   ├── MODEL_PATH = "data/best_model_pipeline.pkl"
+│   ├── Vérification existence fichier
+│   └── Chargement avec joblib.load()
+├── Modèles de données Pydantic :
+│   └── CustomerData (adapter selon votre thème)
+├── Endpoints :
+│   ├── GET /health : Vérification état API et modèle
+│   └── POST /predict : Prédiction principale
+
+3.3 MODÈLE DE DONNÉES (EXEMPLE À ADAPTER)
+-----------------------------------------
+class CustomerData(BaseModel):
+    # Adapter ces champs selon votre thématique
+    Geography: str          # Catégoriel
+    Gender: str            # Catégoriel  
+    CreditScore: int       # Numérique
+    Age: int              # Numérique
+    Tenure: int           # Numérique
+    Balance: float        # Numérique
+    NumOfProducts: int    # Numérique
+    HasCrCard: int        # Binaire
+    IsActiveMember: int    # Binaire
+    EstimatedSalary: float # Numérique
+
+3.4 PIPELINE ML
+--------------
+Fichier : modeling.py
+├── Algorithmes :
+│   ├── XGBoost (XGBClassifier)
+│   ├── RandomForest (RandomForestClassifier)
+│   └── Stacking Ensemble
+├── Prétraitement :
+│   ├── SMOTE (imbalanced-learn) pour déséquilibre
+│   ├── StandardScaler pour numériques
+│   └── OneHotEncoder pour catégoriels
+├── Évaluation :
+│   ├── Confusion Matrix
+│   ├── ROC Curve
+│   ├── Classification Report
+│   └── Cross-validation
+├── Persistance :
+│   └── joblib.dump() pour sauvegarder pipeline
+
+3.5 COLLECTE DE DONNÉES
+----------------------
+Fichier : scraping.py
+├── Bibliothèques :
+│   ├── requests (HTTP)
+│   └── BeautifulSoup4 (HTML parsing)
+├── Pattern :
+│   ├── Requêtes HTTP vers sources
+│   ├── Parsing HTML/XML
+│   ├── Nettoyage et structuration
+│   └── Export CSV
+
+3.6 ANALYSE EXPLORATOIRE
+------------------------
+Fichier : data_exploration.py
+├── Visualisations :
+│   ├── Matplotlib (graphiques de base)
+│   └── Seaborn (graphiques statistiques)
+├── Analyses :
+│   ├── Distribution variables
+│   ├── Corrélations
+│   ├── Valeurs manquantes
+│   └── Déséquilibre classes
+├── Outputs :
+│   ├── Images PNG dans data/
+│   └── Rapports HTML/PDF
+
+================================================================================
+                            4. ARCHITECTURE FRONTEND (REACT)
+================================================================================
+
+4.1 TECHNOLOGIES
+----------------
+Framework : React 19.2.0
+Build tool : Vite 7.2.4
+HTTP Client : Axios 1.13.3
+UI Icons : Lucide React 0.563.0
+Port développement : 5173
+
+4.2 STRUCTURE FRONTEND
+----------------------
+📁 frontend/
+├── 📄 package.json          # Dépendances et scripts
+├── 📄 vite.config.js        # Configuration Vite
+├── 📄 index.html           # Point d'entrée
+├── 📁 src/                 # Code source
+│   ├── 📄 App.jsx          # Composant principal
+│   ├── 📄 main.jsx         # Point d'entrée React
+│   └── 📁 components/      # Composants réutilisables
+└── 📁 public/              # Assets statiques
+
+4.3 DÉPENDANCES CLÉS
+-------------------
+"dependencies": {
+  "axios": "^1.13.3",           # Appels API
+  "lucide-react": "^0.563.0",   # Icônes
+  "react": "^19.2.0",           # Framework React
+  "react-dom": "^19.2.0"        # DOM React
+}
+
+4.4 SCRIPTS UTILITAIRES
+-----------------------
+"scripts": {
+  "dev": "vite",              # Développement avec hot-reload
+  "build": "vite build",       # Build production
+  "lint": "eslint .",          # Linting code
+  "preview": "vite preview"    # Preview build local
+}
+
+4.5 PATTERN D'INTÉGRATION API
+-----------------------------
+import axios from 'axios';
+
+const API_BASE_URL = 'http://localhost:8000';
+
+// Exemple d'appel API
+const predictChurn = async (customerData) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/predict`, customerData);
+    return response.data;
+  } catch (error) {
+    console.error('Erreur API:', error);
+    throw error;
+  }
+};
+
+================================================================================
+                            5. ARCHITECTURE INFRASTRUCTURE (DOCKER)
+================================================================================
+
+5.1 DOCKER COMPOSE - 3 SERVICES
+--------------------------------
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - mlflow
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow
+    container_name: mlflow_server
+    ports:
+      - "5000:5000"
+    environment:
+      - MLFLOW_BACKEND_STORE_URI=sqlite:///mlflow.db
+      - MLFLOW_DEFAULT_ARTIFACT_ROOT=/app/artifacts
+    volumes:
+      - ./mlruns:/app/artifacts
+    command: >
+      mlflow server --backend-store-uri sqlite:///mlflow.db 
+      --default-artifact-root /app/artifacts --host 0.0.0.0
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+5.2 DOCKERFILE BACKEND
+----------------------
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY code/ ./code/
+COPY data/ ./data/
+
+EXPOSE 8000
+
+CMD ["uvicorn", "code.app:app", "--host", "0.0.0.0", "--port", "8000"]
+
+5.3 DOCKERFILE FRONTEND
+-----------------------
+# Build stage
+FROM node:18-alpine as build
+
+WORKDIR /app
+COPY frontend/package*.json ./
+RUN npm ci --only=production
+
+COPY frontend/ .
+RUN npm run build
+
+# Production stage
+FROM nginx:alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/nginx.conf
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
+
+================================================================================
+                            6. DÉPENDANCES PYTHON COMPLÈTES
+================================================================================
+
+requirements.txt :
+----------------
+pandas              # Manipulation données
+numpy               # Calcul numérique
+scikit-learn        # ML classique
+matplotlib          # Visualisations
+seaborn             # Visualisations statistiques
+beautifulsoup4      # Web scraping
+requests            # HTTP client
+mlflow              # Tracking expériences
+xgboost             # Gradient boosting
+fastapi             # Framework API
+uvicorn             # Serveur ASGI
+pydantic            # Validation données
+pdflatex            # Génération PDF
+joblib              # Persistance modèles
+imbalanced-learn    # Gestion déséquilibre
+python-multipart    # Upload fichiers
+
+================================================================================
+                            7. PIPELINE MLOPS COMPLET
+================================================================================
+
+7.1 PHASE 1 : COLLECTE & PRÉPARATION
+-------------------------------------
+1. Web scraping (scraping.py)
+   - Identifier sources de données
+   - Extraire et nettoyer
+   - Sauvegarder en CSV
+
+2. Analyse exploratoire (data_exploration.py)
+   - Statistiques descriptives
+   - Visualisations univariées/bivariées
+   - Détection anomalies
+   - Rapport HTML/PDF
+
+7.2 PHASE 2 : MODÉLISATION
+--------------------------
+1. Prétraitement (modeling.py)
+   - Nettoyage données
+   - Encodage variables
+   - Gestion valeurs manquantes
+   - Split train/test
+
+2. Entraînement modèles
+   - Baseline (RandomForest)
+   - Avancé (XGBoost)
+   - Ensemble (Stacking)
+   - Validation croisée
+
+3. Évaluation
+   - Métriques classification
+   - Matrices confusion
+   - Courbes ROC
+   - Feature importance
+
+7.3 PHASE 3 : TRACKING MLFLOW
+-----------------------------
+1. Configuration
+   - URI tracking SQLite
+   - Expérience nommée
+   - Tags métadonnées
+
+2. Logging
+   - Paramètres d'entraînement
+   - Métriques d'évaluation
+   - Artifacts (modèles, graphiques)
+   - Dataset version
+
+7.4 PHASE 4 : DÉPLOIEMENT API
+-----------------------------
+1. Développement FastAPI
+   - Endpoints REST
+   - Validation Pydantic
+   - Gestion erreurs
+   - Documentation Swagger
+
+2. Tests
+   - Unit tests modèles
+   - Integration tests API
+   - Health checks
+
+7.5 PHASE 5 : FRONTEND
+---------------------
+1. Interface React
+   - Formulaire saisie
+   - Appels API Axios
+   - Affichage résultats
+   - Gestion erreurs
+
+2. UX/UI
+   - Design responsive
+   - Feedback utilisateur
+   - Loading states
+   - Validation formulaire
+
+7.6 PHASE 6 : CONTAINERISATION
+------------------------------
+1. Dockerisation
+   - Images optimisées
+   - Multi-stage builds
+   - Configuration environment
+   - Volumes persistants
+
+2. Orchestration
+   - Docker Compose
+   - Service dependencies
+   - Network configuration
+   - Health checks
+
+================================================================================
+                            8. GUIDE D'ADAPTATION À NOUVEAU THÈME
+================================================================================
+
+8.1 ÉTAPES D'ADAPTATION
+-----------------------
+1. **Analyser votre problématique**
+   - Type de prédiction (classification/régression)
+   - Données disponibles ou à collecter
+   - Métriques de succès
+
+2. **Adapter les données**
+   - Modifier structure CustomerData dans app.py
+   - Adapter scraping.py à vos sources
+   - Mettre à jour data_exploration.py
+
+3. **Personnaliser le ML**
+   - Choisir algorithmes appropriés
+   - Adapter preprocessing
+   - Modifier métriques d'évaluation
+
+4. **Adapter l'interface**
+   - Modifier formulaire React
+   - Adapter champs de saisie
+   - Personnaliser affichage résultats
+
+5. **Configurer l'environnement**
+   - Mettre à jour variables environment
+   - Adapter ports si nécessaire
+   - Personnaliser MLflow experiments
+
+8.2 EXEMPLES D'ADAPTATION
+--------------------------
+🎯 Thème : Prédiction prix immobilier
+├── Données : surface, localisation, nombre pièces
+├── Modèles : RandomForest, GradientBoosting
+├── Métriques : MAE, RMSE, R²
+└── Interface : formulaire caractéristiques bien
+
+🎯 Thème : Détection fraudes transactions
+├── Données : montant, temps, catégorie, historique
+├── Modèles : Isolation Forest, XGBoost
+├── Métriques : Precision, Recall, F1-score
+└── Interface : alertes temps réel
+
+🎯 Thème : Recommandation produits
+├── Données : historique achats, profil utilisateur
+├── Modèles : Collaborative Filtering, Content-based
+├── Métriques : Precision@K, NDCG
+└── Interface : suggestions personnalisées
+
+8.3 CHECKLIST MIGRATION
+-----------------------
+□ Analyser requirements spécifiques
+□ Adapter structure de données
+□ Modifier modèles Pydantic
+□ Personnaliser pipeline ML
+□ Mettre à jour interface frontend
+□ Tester tous les composants
+□ Déployer avec Docker
+□ Documenter adaptations
+
+================================================================================
+                            9. BONNES PRATIQUES
+================================================================================
+
+9.1 DÉVELOPPEMENT
+-----------------
+- Code modulaire et réutilisable
+- Tests unitaires et intégration
+- Documentation complète
+- Version control (Git)
+- Code review systématique
+
+9.2 MLOPS
+----------
+- Tracking expériences systématique
+- Versioning modèles et données
+- Monitoring en production
+- CI/CD automatisé
+- Sécurité et compliance
+
+9.3 DÉPLOIEMENT
+---------------
+- Infrastructure as code
+- Monitoring et logging
+- Backup et recovery
+- Scaling horizontal
+- Sécurité renforcée
+
+================================================================================
+                            10. RÉSUMÉ TECHNIQUE
+================================================================================
+
+Architecture : Microservices Backend/Frontend + MLflow
+Backend : FastAPI + Python ML ecosystem
+Frontend : React + Vite + Axios
+Infrastructure : Docker + Docker Compose
+Tracking : MLflow avec SQLite
+Database : SQLite pour MLflow, fichiers pour modèles
+Deployment : Containers orchestrés
+Scalability : Horizontale via containers
+Monitoring : Health checks + MLflow UI
+
+Cette architecture est générique et s'adapte à tout projet de Machine Learning
+avec des besoins de déploiement en production. Le pattern microservices assure
+la scalabilité et la maintenabilité du système.
+
+================================================================================
+                                    FIN DU DOCUMENT
+================================================================================

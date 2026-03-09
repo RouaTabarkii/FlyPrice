@@ -67,29 +67,37 @@ feature_columns = None
 
 import os
 
-# Get the directory where this file is located
+# Get the parent directory (FlyPrice-main)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_PATH = os.path.join(BASE_DIR, "models", "xgboost_flight_price_model.pkl")
+
+print(f"Looking for model at: {MODEL_PATH}")
+print(f"Model exists: {os.path.exists(MODEL_PATH)}")
 
 def load_model():
     """Load the trained model"""
     global model_data, model, scaler, label_encoders, feature_columns
     
     try:
-        model_data = joblib.load(MODEL_PATH)
-        model = model_data['model']
-        scaler = model_data['scaler']
-        label_encoders = model_data['label_encoders']
-        feature_columns = model_data['feature_columns']
+        loaded_data = joblib.load(MODEL_PATH)
+        
+        # Assign to global variables explicitly
+        globals()['model_data'] = loaded_data
+        globals()['model'] = loaded_data['model']
+        globals()['scaler'] = loaded_data['scaler']
+        globals()['label_encoders'] = loaded_data['label_encoders']
+        globals()['feature_columns'] = loaded_data['feature_columns']
+        
         print(f"✅ Model loaded successfully from {MODEL_PATH}")
+        print(f"Model type: {type(globals()['model'])}")
+        print(f"Feature columns: {len(globals()['feature_columns'])}")
+        return True
     except FileNotFoundError:
         print(f"❌ Model file not found at {MODEL_PATH}")
         return False
     except Exception as e:
         print(f"❌ Error loading model: {e}")
         return False
-    
-    return True
 
 def preprocess_flight_data(flight: FlightFeatures) -> pd.DataFrame:
     """Preprocess flight data for prediction"""
@@ -245,6 +253,27 @@ async def predict_prices(request: PredictionRequest):
 @app.post("/predict/single")
 async def predict_single_flight(flight: FlightFeatures):
     """Predict price for a single flight"""
+    print(f"DEBUG: model is None? {model is None}")
+    print(f"DEBUG: model type: {type(model)}")
+    
+    # Fallback: Load model if not loaded
+    if model is None:
+        print("DEBUG: Loading model as fallback...")
+        try:
+            loaded_data = joblib.load(MODEL_PATH)
+            globals()['model_data'] = loaded_data
+            globals()['model'] = loaded_data['model']
+            globals()['scaler'] = loaded_data['scaler']
+            globals()['label_encoders'] = loaded_data['label_encoders']
+            globals()['feature_columns'] = loaded_data['feature_columns']
+            print("DEBUG: Model loaded as fallback!")
+        except Exception as e:
+            print(f"DEBUG: Fallback failed: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Model not loaded and fallback failed"
+            )
+    
     if not model:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

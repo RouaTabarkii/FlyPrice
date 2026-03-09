@@ -10,7 +10,12 @@ import faiss
 import openai
 from datetime import datetime
 import warnings
+import google.generativeai as genai
+from dotenv import load_dotenv
 warnings.filterwarnings('ignore')
+
+# Load environment variables
+load_dotenv()
 
 # Pydantic models
 class ChatMessage(BaseModel):
@@ -29,6 +34,42 @@ class TravelRAGSystem:
         self.index = None
         self.knowledge_texts = []
         self.knowledge_metadata = []
+        
+        # Initialize Google Gemini
+        self.api_key = os.getenv('GOOGLE_API_KEY')
+        if self.api_key:
+            genai.configure(api_key=self.api_key)
+            try:
+                # List available models first
+                models = genai.list_models()
+                available_models = []
+                for m in models:
+                    if 'generateContent' in m.supported_generation_methods:
+                        available_models.append(m.name)
+                        print(f"Available model: {m.name}")
+                
+                # Try different model names in order of preference
+                model_names = ['models/gemini-2.5-flash', 'models/gemini-2.0-flash', 'models/gemini-pro-latest', 'models/gemini-flash-latest']
+                self.model = None
+                
+                for model_name in model_names:
+                    try:
+                        if model_name in available_models:
+                            self.model = genai.GenerativeModel(model_name)
+                            print(f"Google Gemini model initialized successfully: {model_name}")
+                            break
+                    except Exception as e:
+                        print(f"Failed to initialize {model_name}: {e}")
+                        continue
+                
+                if self.model is None:
+                    print("Could not initialize any Gemini model, using fallback")
+            except Exception as e:
+                print(f"Error initializing Gemini: {e}")
+                self.model = None
+        else:
+            print("Warning: GOOGLE_API_KEY not found in environment variables")
+            self.model = None
         
         self.load_knowledge_base()
         self.build_vector_index()
@@ -165,7 +206,7 @@ class TravelRAGSystem:
         return results
     
     def generate_response(self, query: str, context: Optional[Dict] = None) -> Dict:
-        """Generate response using RAG approach"""
+        """Generate response using RAG approach with Google Gemini"""
         # Search knowledge base
         relevant_docs = self.search_knowledge(query, top_k=3)
         
@@ -177,22 +218,35 @@ class TravelRAGSystem:
             }
         
         # Build context for LLM
-        context_text = "\n".join([doc['text'] for doc in relevant_docs])
+        context_text = "\n".join([f"{i+1}. {doc['text']}" for i, doc in enumerate(relevant_docs)])
         
-        # Create prompt
-        prompt = f"""You are a helpful travel assistant. Use the following travel information to answer the user's question. If the information doesn't fully answer the question, provide general helpful advice based on your travel knowledge.
+        # Create prompt for Gemini
+        prompt = f"""You are a helpful travel assistant with expertise in flight booking, travel tips, and general travel advice. 
+Use the following travel information to answer the user's question comprehensively. 
+If the information doesn't fully answer the question, provide general helpful advice based on your travel knowledge.
 
-Context:
+Relevant Travel Information:
 {context_text}
 
 User Question: {query}
 
-Provide a helpful, friendly response:"""
+Instructions:
+1. Provide a comprehensive, friendly, and helpful response
+2. Use the relevant information above when applicable
+3. If needed, supplement with general travel knowledge
+4. Keep the response conversational and easy to understand
+5. Include practical tips and advice when relevant
+
+Response:"""
         
         try:
-            # For demonstration, we'll use a simple response generation
-            # In production, you would use OpenAI API or another LLM
-            response_text = self._generate_simple_response(query, relevant_docs)
+            # Use Google Gemini for response generation
+            if self.model:
+                response = self.model.generate_content(prompt)
+                response_text = response.text
+            else:
+                # Fallback to simple response generation
+                response_text = self._generate_simple_response(query, relevant_docs)
             
             # Calculate confidence based on similarity scores
             confidence = np.mean([doc['similarity_score'] for doc in relevant_docs])
@@ -205,10 +259,14 @@ Provide a helpful, friendly response:"""
             
         except Exception as e:
             print(f"Error generating response: {e}")
+            # Fallback to simple response
+            response_text = self._generate_simple_response(query, relevant_docs)
+            confidence = np.mean([doc['similarity_score'] for doc in relevant_docs]) if relevant_docs else 0.0
+            
             return {
-                'response': "I'm having trouble processing your request right now. Please try again or ask a different question.",
-                'sources': [],
-                'confidence': 0.0
+                'response': response_text,
+                'sources': [doc['metadata'].get('category', 'general') for doc in relevant_docs],
+                'confidence': float(confidence)
             }
     
     def _generate_simple_response(self, query: str, relevant_docs: List[Dict]) -> str:

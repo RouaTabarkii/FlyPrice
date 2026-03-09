@@ -300,7 +300,7 @@ def main():
     comparison = MultiModelComparison()
     
     try:
-        X, y = comparison.load_and_preprocess_data("flights_dataset_100000.csv")
+        X, y = comparison.load_and_preprocess_data("../flights_dataset_100000.csv")
         comparison.train_all_models(X, y)
         
         # Compare models

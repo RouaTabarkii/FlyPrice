@@ -1,0 +1,48 @@
+services:
+  flyprice-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.minimal
+    container_name: flyprice-api
+    ports:
+      - "8000:8000"
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - PYTHONPATH=/app
+    volumes:
+      - ./mlflow_tracking:/app/mlflow_tracking
+      - ./rag_knowledge:/app/rag_knowledge
+      - ./models:/app/models
+      - ./data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Add MLflow UI service
+  mlflow-ui:
+    image: python:3.9-slim
+    container_name: flyprice-mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlflow_tracking:/app/mlflow_tracking
+    command: >
+      sh -c "
+        pip install mlflow &&
+        mlflow server 
+        --host 0.0.0.0 
+        --port 5000 
+        --backend-store-uri file:///app/mlflow_tracking
+        --default-artifact-root /app/mlflow_tracking
+      "
+    restart: unless-stopped
+    depends_on:
+      - flyprice-api
+
+networks:
+  default:
+    name: flyprice-network

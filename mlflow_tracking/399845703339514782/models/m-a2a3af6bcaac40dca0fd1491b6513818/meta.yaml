@@ -1,0 +1,10 @@
+artifact_location: file:///c:/Users/moham/Desktop/fly/FlyPrice-main/mlflow_tracking/399845703339514782/models/m-a2a3af6bcaac40dca0fd1491b6513818/artifacts
+creation_timestamp: 1772485459444
+experiment_id: '399845703339514782'
+last_updated_timestamp: 1772485463354
+model_id: m-a2a3af6bcaac40dca0fd1491b6513818
+model_type: null
+name: model
+source_run_id: 6cb082f33ea24538a8c89bbeea414450
+status: 2
+status_message: null

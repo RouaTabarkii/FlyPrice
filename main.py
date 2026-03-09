@@ -22,11 +22,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load model on startup
-model_loaded = load_model()
-if not model_loaded:
-    print("⚠️ Warning: Model not loaded. Prediction will not work.")
-
 # Mount sub-applications
 app.mount("/predict", prediction_app)
 app.mount("/auth", auth_app)

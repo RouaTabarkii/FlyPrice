@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Price Predictor - Docker Version</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 90%;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2em;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+        }
+        .price {
+            font-size: 2.5em;
+            color: #28a745;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .loading {
+            text-align: center;
+            color: #666;
+            display: none;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✈️ Flight Price Predictor</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">
+            Docker Version - Connected to Backend API
+        </p>
+        
+        <form id="predictionForm">
+            <div class="form-group">
+                <label for="origin">Origin City</label>
+                <select id="origin" required>
+                    <option value="">Select origin</option>
+                    <option value="JFK">New York (JFK)</option>
+                    <option value="LAX">Los Angeles (LAX)</option>
+                    <option value="ORD">Chicago (ORD)</option>
+                    <option value="MIA">Miami (MIA)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="destination">Destination City</label>
+                <select id="destination" required>
+                    <option value="">Select destination</option>
+                    <option value="LAX">Los Angeles (LAX)</option>
+                    <option value="JFK">New York (JFK)</option>
+                    <option value="ORD">Chicago (ORD)</option>
+                    <option value="MIA">Miami (MIA)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="cabin">Cabin Class</label>
+                <select id="cabin" required>
+                    <option value="">Select cabin class</option>
+                    <option value="Economy">Economy</option>
+                    <option value="Premium Economy">Premium Economy</option>
+                    <option value="Business">Business</option>
+                    <option value="First">First</option>
+                </select>
+            </div>
+            
+            <button type="submit" id="predictBtn">
+                Predict Price 🚀
+            </button>
+        </form>
+        
+        <div class="loading" id="loading">
+            <p>🔄 Predicting flight price...</p>
+        </div>
+        
+        <div class="result" id="result">
+            <h3>Predicted Price</h3>
+            <div class="price" id="price">$0.00</div>
+            <p id="route"></p>
+        </div>
+        
+        <div class="error" id="error"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        
+        document.getElementById('predictionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const origin = document.getElementById('origin').value;
+            const destination = document.getElementById('destination').value;
+            const cabin = document.getElementById('cabin').value;
+            
+            if (!origin || !destination || !cabin) {
+                showError('Please fill all fields');
+                return;
+            }
+            
+            if (origin === destination) {
+                showError('Origin and destination must be different');
+                return;
+            }
+            
+            showLoading(true);
+            hideError();
+            hideResult();
+            
+            try {
+                const response = await fetch(`${API_BASE}/predict/predict/single`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        airline_code: 'AA',
+                        origin_airport: origin,
+                        dest_airport: destination,
+                        cabin_class: cabin,
+                        fare_type: 'Non-Refundable',
+                        aircraft_type: 'Boeing 737',
+                        distance_km: 4000,
+                        duration_hours: 5,
+                        stops: 0,
+                        flight_date: '2024-06-15',
+                        departure_hour: 10,
+                        departure_minute: 0,
+                        seats_available: 45
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                showResult(data, origin, destination, cabin);
+                
+            } catch (error) {
+                console.error('Prediction error:', error);
+                showError('Failed to connect to backend. Make sure Docker is running.');
+            } finally {
+                showLoading(false);
+            }
+        });
+        
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+            document.getElementById('predictBtn').disabled = show;
+        }
+        
+        function showResult(data, origin, destination, cabin) {
+            document.getElementById('price').textContent = `$${data.predicted_price.toFixed(2)} ${data.currency}`;
+            document.getElementById('route').textContent = `${origin} → ${destination} (${cabin})`;
+            document.getElementById('result').style.display = 'block';
+        }
+        
+        function hideResult() {
+            document.getElementById('result').style.display = 'none';
+        }
+        
+        function showError(message) {
+            document.getElementById('error').textContent = message;
+            document.getElementById('error').style.display = 'block';
+        }
+        
+        function hideError() {
+            document.getElementById('error').style.display = 'none';
+        }
+        
+        // Test connection on load
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                if (response.ok) {
+                    console.log('✅ Connected to Docker backend');
+                } else {
+                    throw new Error('Backend not responding');
+                }
+            } catch (error) {
+                showError('Cannot connect to Docker backend. Please check if containers are running.');
+            }
+        });
+    </script>
+</body>
+</html>

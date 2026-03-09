@@ -1,0 +1,23 @@
+artifact_path: file:///c:/Users/moham/Desktop/fly/FlyPrice-main/mlflow_tracking/977363302318645728/models/m-c65daa06c0c44ee2b07452e695043e8b/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.13.9
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.5.2
+    skops_trusted_types: null
+mlflow_version: 3.10.0
+model_id: m-c65daa06c0c44ee2b07452e695043e8b
+model_size_bytes: 692
+model_uuid: m-c65daa06c0c44ee2b07452e695043e8b
+prompts: null
+run_id: bb720c40fc76420da09f3756710089a7
+utc_time_created: '2026-03-02 20:56:01.436828'
