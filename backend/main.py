@@ -42,23 +42,20 @@ class ModelInfo(BaseModel):
     target: str
     performance_metrics: Dict[str, float]
 
-# Initialize FastAPI app
 app = FastAPI(
     title="Flight Price Prediction API",
     description="API for predicting flight prices using trained ML models",
     version="1.0.0"
 )
 
-# CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify actual origins
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Global variables for model
 model_data = None
 model = None
 scaler = None
@@ -67,7 +64,6 @@ feature_columns = None
 
 import os
 
-# Get the parent directory (FlyPrice-main)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_PATH = os.path.join(BASE_DIR, "models", "xgboost_flight_price_model.pkl")
 
@@ -88,20 +84,19 @@ def load_model():
         globals()['label_encoders'] = loaded_data['label_encoders']
         globals()['feature_columns'] = loaded_data['feature_columns']
         
-        print(f"✅ Model loaded successfully from {MODEL_PATH}")
+        print(f"Model loaded successfully from {MODEL_PATH}")
         print(f"Model type: {type(globals()['model'])}")
         print(f"Feature columns: {len(globals()['feature_columns'])}")
         return True
     except FileNotFoundError:
-        print(f"❌ Model file not found at {MODEL_PATH}")
+        print(f"Model file not found at {MODEL_PATH}")
         return False
     except Exception as e:
-        print(f"❌ Error loading model: {e}")
+        print(f"Error loading model: {e}")
         return False
 
 def preprocess_flight_data(flight: FlightFeatures) -> pd.DataFrame:
     """Preprocess flight data for prediction"""
-    # Create base dataframe
     data = {
         'airline_code': [flight.airline_code],
         'origin_airport': [flight.origin_airport],
@@ -120,38 +115,33 @@ def preprocess_flight_data(flight: FlightFeatures) -> pd.DataFrame:
     
     df = pd.DataFrame(data)
     
-    # Feature engineering (same as training)
     df['flight_date'] = pd.to_datetime(df['flight_date'])
     df['day_of_week'] = df['flight_date'].dt.dayofweek
     df['month'] = df['flight_date'].dt.month
     df['quarter'] = df['flight_date'].dt.quarter
     df['is_weekend'] = (df['day_of_week'] >= 5).astype(int)
     
-    # Time-based features
     df['departure_time_minutes'] = df['departure_hour'] * 60 + df['departure_minute']
     df['is_morning_flight'] = ((df['departure_hour'] >= 6) & (df['departure_hour'] < 12)).astype(int)
     df['is_evening_flight'] = ((df['departure_hour'] >= 18) & (df['departure_hour'] < 22)).astype(int)
     
-    # Distance categories
     df['distance_category'] = pd.cut(df['distance_km'], 
                                     bins=[0, 500, 2000, 6000, float('inf')],
                                     labels=['short', 'medium', 'long', 'ultra_long'])
     
-    # Encode categorical variables
     categorical_features = ['airline_code', 'origin_airport', 'dest_airport', 
                            'cabin_class', 'fare_type', 'aircraft_type', 'distance_category']
     
     for col in categorical_features:
         if col in df.columns and col in label_encoders:
             le = label_encoders[col]
-            # Handle unseen categories
             unique_values = set(le.classes_)
             df[col] = df[col].astype(str)
             df[col + '_encoded'] = df[col].apply(
                 lambda x: le.transform([x])[0] if x in unique_values else -1
             )
         else:
-            df[col + '_encoded'] = -1  # Default for unknown categories
+            df[col + '_encoded'] = -1  
     
     return df
 
@@ -212,23 +202,18 @@ async def predict_prices(request: PredictionRequest):
     start_time = datetime.now()
     
     try:
-        # Process all flights
         all_predictions = []
         
         for flight in request.flights:
-            # Preprocess data
             df = preprocess_flight_data(flight)
             
-            # Ensure all feature columns exist
             for col in feature_columns:
                 if col not in df.columns:
                     df[col] = 0
             
-            # Prepare features
             X = df[feature_columns]
             X_scaled = scaler.transform(X)
             
-            # Make prediction
             prediction = model.predict(X_scaled)[0]
             all_predictions.append(float(prediction))
         
@@ -256,7 +241,6 @@ async def predict_single_flight(flight: FlightFeatures):
     print(f"DEBUG: model is None? {model is None}")
     print(f"DEBUG: model type: {type(model)}")
     
-    # Fallback: Load model if not loaded
     if model is None:
         print("DEBUG: Loading model as fallback...")
         try:
@@ -281,19 +265,15 @@ async def predict_single_flight(flight: FlightFeatures):
         )
     
     try:
-        # Preprocess data
         df = preprocess_flight_data(flight)
         
-        # Ensure all feature columns exist
         for col in feature_columns:
             if col not in df.columns:
                 df[col] = 0
         
-        # Prepare features
         X = df[feature_columns]
         X_scaled = scaler.transform(X)
         
-        # Make prediction
         prediction = model.predict(X_scaled)[0]
         
         return {

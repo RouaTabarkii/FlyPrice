@@ -47,7 +47,6 @@ def init_db():
     conn = sqlite3.connect('database/users.db')
     cursor = conn.cursor()
     
-    # Create users table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -127,7 +126,6 @@ def create_auth_app():
     """Create authentication FastAPI app"""
     app = FastAPI(title="Flight Price Auth API", version="1.0.0")
     
-    # CORS middleware
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -143,7 +141,6 @@ def create_auth_app():
     @app.post("/register", response_model=UserResponse)
     async def register(user: UserCreate):
         """Register a new user"""
-        # Check if user already exists
         conn = get_db_connection()
         cursor = conn.cursor()
         
@@ -158,7 +155,6 @@ def create_auth_app():
                 detail="Username or email already registered"
             )
         
-        # Create new user
         hashed_password = get_password_hash(user.password)
         cursor.execute(
             "INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)",
@@ -168,7 +164,6 @@ def create_auth_app():
         user_id = cursor.lastrowid
         conn.commit()
         
-        # Get created user
         cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
         created_user = cursor.fetchone()
         conn.close()
@@ -221,7 +216,6 @@ def create_auth_app():
     
     return app
 
-# Create the auth app
 auth_app = create_auth_app()
 
 if __name__ == "__main__":

@@ -40,7 +40,6 @@ class TravelRAGSystem:
         if self.api_key:
             genai.configure(api_key=self.api_key)
             try:
-                # List available models first
                 models = genai.list_models()
                 available_models = []
                 for m in models:
@@ -48,7 +47,6 @@ class TravelRAGSystem:
                         available_models.append(m.name)
                         print(f"Available model: {m.name}")
                 
-                # Try different model names in order of preference
                 model_names = ['models/gemini-2.5-flash', 'models/gemini-2.0-flash', 'models/gemini-pro-latest', 'models/gemini-flash-latest']
                 self.model = None
                 
@@ -76,7 +74,6 @@ class TravelRAGSystem:
     
     def load_knowledge_base(self):
         """Load travel knowledge base"""
-        # Create default knowledge base if it doesn't exist
         if not os.path.exists(self.knowledge_base_path):
             self.create_default_knowledge_base()
         
@@ -157,7 +154,6 @@ class TravelRAGSystem:
             }
         ]
         
-        # Save default knowledge base
         os.makedirs(os.path.dirname(self.knowledge_base_path), exist_ok=True)
         with open(self.knowledge_base_path, 'w', encoding='utf-8') as f:
             json.dump(default_knowledge, f, indent=2, ensure_ascii=False)
@@ -172,10 +168,8 @@ class TravelRAGSystem:
         if not self.knowledge_texts:
             return
         
-        # Generate embeddings
         embeddings = self.embeddings_model.encode(self.knowledge_texts)
         
-        # Create FAISS index
         dimension = embeddings.shape[1]
         self.index = faiss.IndexFlatL2(dimension)
         self.index.add(embeddings.astype('float32'))
@@ -187,10 +181,8 @@ class TravelRAGSystem:
         if not self.index or not self.knowledge_texts:
             return []
         
-        # Generate query embedding
         query_embedding = self.embeddings_model.encode([query])
         
-        # Search for similar items
         distances, indices = self.index.search(query_embedding.astype('float32'), top_k)
         
         results = []
@@ -199,7 +191,7 @@ class TravelRAGSystem:
                 results.append({
                     'text': self.knowledge_texts[idx],
                     'metadata': self.knowledge_metadata[idx],
-                    'similarity_score': float(1 / (1 + dist)),  # Convert distance to similarity
+                    'similarity_score': float(1 / (1 + dist)),  
                     'rank': i + 1
                 })
         
@@ -207,7 +199,6 @@ class TravelRAGSystem:
     
     def generate_response(self, query: str, context: Optional[Dict] = None) -> Dict:
         """Generate response using RAG approach with Google Gemini"""
-        # Search knowledge base
         relevant_docs = self.search_knowledge(query, top_k=3)
         
         if not relevant_docs:
@@ -217,10 +208,8 @@ class TravelRAGSystem:
                 'confidence': 0.1
             }
         
-        # Build context for LLM
         context_text = "\n".join([f"{i+1}. {doc['text']}" for i, doc in enumerate(relevant_docs)])
         
-        # Create prompt for Gemini
         prompt = f"""You are a helpful travel assistant with expertise in flight booking, travel tips, and general travel advice. 
 Use the following travel information to answer the user's question comprehensively. 
 If the information doesn't fully answer the question, provide general helpful advice based on your travel knowledge.
@@ -245,10 +234,8 @@ Response:"""
                 response = self.model.generate_content(prompt)
                 response_text = response.text
             else:
-                # Fallback to simple response generation
                 response_text = self._generate_simple_response(query, relevant_docs)
             
-            # Calculate confidence based on similarity scores
             confidence = np.mean([doc['similarity_score'] for doc in relevant_docs])
             
             return {
@@ -259,7 +246,6 @@ Response:"""
             
         except Exception as e:
             print(f"Error generating response: {e}")
-            # Fallback to simple response
             response_text = self._generate_simple_response(query, relevant_docs)
             confidence = np.mean([doc['similarity_score'] for doc in relevant_docs]) if relevant_docs else 0.0
             
@@ -271,12 +257,9 @@ Response:"""
     
     def _generate_simple_response(self, query: str, relevant_docs: List[Dict]) -> str:
         """Generate simple response based on relevant documents"""
-        # This is a simplified response generation
-        # In production, you would use an actual LLM
         
         query_lower = query.lower()
         
-        # Check for specific topics and provide targeted responses
         if any(word in query_lower for word in ['book', 'booking', 'when', 'best time']):
             return "For the best flight prices, book domestic flights 6-8 weeks in advance and international flights 2-3 months ahead. Tuesday and Wednesday departures are typically cheaper. Consider being flexible with your dates for better deals."
         
@@ -296,13 +279,11 @@ Response:"""
             return "For international connections, allow at least 2 hours between flights. Consider airport lounges for long layovers. Some cities offer free city tours during extended layovers. Stay within the secure area to avoid re-screening."
         
         else:
-            # General response based on most relevant document
             if relevant_docs:
                 return relevant_docs[0]['text']
             else:
                 return "I'm here to help with your travel questions! You can ask me about flight booking, packing tips, airport procedures, travel insurance, and general travel advice."
 
-# Initialize RAG system
 rag_system = TravelRAGSystem()
 
 def create_chatbot_app():
@@ -355,7 +336,6 @@ def create_chatbot_app():
     
     return app
 
-# Create the chatbot app
 chatbot_app = create_chatbot_app()
 
 if __name__ == "__main__":

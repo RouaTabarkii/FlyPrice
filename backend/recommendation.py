@@ -16,7 +16,7 @@ class FlightRecommendationRequest(BaseModel):
     cabin_class: Optional[str] = None
     preferred_airlines: Optional[List[str]] = None
     max_stops: Optional[int] = None
-    departure_date_range: Optional[str] = None  # e.g., "2024-06-01,2024-06-30"
+    departure_date_range: Optional[str] = None  
 
 class FlightRecommendation(BaseModel):
     flight_number: str
@@ -43,7 +43,6 @@ class RecommendationResponse(BaseModel):
 class FlightRecommendationSystem:
     def __init__(self, dataset_path: str = None):
         if dataset_path is None:
-            # Get absolute path to dataset
             import os
             base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
             dataset_path = os.path.join(base_dir, "flights_dataset_100000.csv")
@@ -71,36 +70,29 @@ class FlightRecommendationSystem:
         
         start_time = datetime.now()
         
-        # Start with all flights
         filtered_df = self.flights_df.copy()
         
-        # Filter by route
         if request.origin_airport:
             filtered_df = filtered_df[filtered_df['origin_airport'] == request.origin_airport]
         
         if request.dest_airport:
             filtered_df = filtered_df[filtered_df['dest_airport'] == request.dest_airport]
         
-        # Filter by budget
         if request.budget_min is not None:
             filtered_df = filtered_df[filtered_df['price_usd'] >= request.budget_min]
         
         if request.budget_max is not None:
             filtered_df = filtered_df[filtered_df['price_usd'] <= request.budget_max]
         
-        # Filter by cabin class
         if request.cabin_class:
             filtered_df = filtered_df[filtered_df['cabin_class'] == request.cabin_class]
         
-        # Filter by preferred airlines
         if request.preferred_airlines:
             filtered_df = filtered_df[filtered_df['airline_code'].isin(request.preferred_airlines)]
         
-        # Filter by stops
         if request.max_stops is not None:
             filtered_df = filtered_df[filtered_df['stops'] <= request.max_stops]
         
-        # Filter by date range
         if request.departure_date_range:
             try:
                 start_date, end_date = request.departure_date_range.split(',')
@@ -112,12 +104,10 @@ class FlightRecommendationSystem:
                     (filtered_df['flight_date'] <= end_date)
                 ]
             except:
-                pass  # Ignore invalid date range
+                pass  
         
-        # Calculate recommendation scores
         recommendations = self._calculate_scores(filtered_df, request)
         
-        # Sort by score (descending) and limit to top 20
         recommendations.sort(key=lambda x: x.score, reverse=True)
         recommendations = recommendations[:20]
         
@@ -132,10 +122,8 @@ class FlightRecommendationSystem:
         for _, flight in flights_df.iterrows():
             score = 0.0
             
-            # Base score
             score += 10.0
             
-            # Price scoring (lower is better)
             if request.budget_max:
                 price_ratio = flight['price_usd'] / request.budget_max
                 if price_ratio <= 0.5:
@@ -145,39 +133,32 @@ class FlightRecommendationSystem:
                 elif price_ratio <= 1.0:
                     score += 5.0
             
-            # Direct flight bonus
             if flight['stops'] == 0:
                 score += 15.0
             elif flight['stops'] == 1:
                 score += 5.0
             
-            # Cabin class bonus
             if request.cabin_class == flight['cabin_class']:
                 score += 10.0
             
-            # Preferred airline bonus
             if request.preferred_airlines and flight['airline_code'] in request.preferred_airlines:
                 score += 8.0
             
-            # Seat availability bonus
             if flight['seats_available'] > 20:
                 score += 5.0
             elif flight['seats_available'] > 5:
                 score += 2.0
             
-            # Time preference bonus (morning/evening flights)
-            if 6 <= flight['departure_hour'] <= 10:  # Morning
+            if 6 <= flight['departure_hour'] <= 10:  
                 score += 3.0
-            elif 18 <= flight['departure_hour'] <= 22:  # Evening
+            elif 18 <= flight['departure_hour'] <= 22:  
                 score += 3.0
             
-            # Aircraft type bonus (newer aircraft)
             if '787' in str(flight['aircraft_type']) or 'A350' in str(flight['aircraft_type']):
                 score += 5.0
             elif 'A320' in str(flight['aircraft_type']) or '737' in str(flight['aircraft_type']):
                 score += 2.0
             
-            # Create recommendation object
             recommendation = FlightRecommendation(
                 flight_number=flight['flight_number'],
                 airline=flight['airline'],
@@ -206,11 +187,9 @@ class FlightRecommendationSystem:
             departure_minute = int(flight['departure_minute'])
             duration_hours = float(flight['duration_hours'])
             
-            # Convert to minutes
             departure_total_minutes = departure_hour * 60 + departure_minute
             arrival_total_minutes = departure_total_minutes + int(duration_hours * 60)
             
-            # Handle next day arrival
             arrival_hour = (arrival_total_minutes // 60) % 24
             arrival_minute = arrival_total_minutes % 60
             
@@ -262,7 +241,6 @@ class FlightRecommendationSystem:
         
         return sorted(airline_stats, key=lambda x: x['flight_count'], reverse=True)
 
-# Initialize recommendation system
 recommendation_system = FlightRecommendationSystem()
 
 def create_recommendation_app():
@@ -326,7 +304,6 @@ def create_recommendation_app():
     
     return app
 
-# Create the recommendation app
 recommendation_app = create_recommendation_app()
 
 if __name__ == "__main__":
