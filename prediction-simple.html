@@ -100,7 +100,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>✈️ Flight Price Predictor</h1>
+        <h1> Flight Price Predictor</h1>
         <p style="text-align: center; color: #666; margin-bottom: 30px;">
             Docker Version - Connected to Backend API
         </p>
@@ -140,12 +140,12 @@
             </div>
             
             <button type="submit" id="predictBtn">
-                Predict Price 🚀
+                Predict Price 
             </button>
         </form>
         
         <div class="loading" id="loading">
-            <p>🔄 Predicting flight price...</p>
+            <p>Predicting flight price...</p>
         </div>
         
         <div class="result" id="result">
@@ -248,7 +248,7 @@
             try {
                 const response = await fetch(`${API_BASE}/health`);
                 if (response.ok) {
-                    console.log('✅ Connected to Docker backend');
+                    console.log(' Connected to Docker backend');
                 } else {
                     throw new Error('Backend not responding');
                 }

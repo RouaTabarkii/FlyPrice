@@ -5,17 +5,14 @@ import uvicorn
 import os
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
 
-# Create main FastAPI app
 app = FastAPI(
     title="Flight Price Prediction System",
     description="Complete flight price prediction and travel assistance system",
     version="1.0.0"
 )
 
-# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,7 +21,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve frontend HTML files (must come before JSON endpoints)
 @app.get("/prediction.html", response_class=HTMLResponse)
 async def serve_prediction():
     """Serve prediction frontend"""
@@ -144,7 +140,6 @@ async def health_check():
         "timestamp": "2024-01-01T00:00:00Z"
     }
 
-# Simple authentication endpoints for Docker version
 @app.post("/auth/login")
 async def login_simple(credentials: dict):
     """Simple login endpoint for Docker version"""
@@ -180,7 +175,6 @@ async def get_current_user():
         "role": "user"
     }
 
-# Additional recommendation endpoint for frontend compatibility
 @app.post("/recommend/recommend")
 async def recommend_general(data: dict):
     """General recommendation endpoint for frontend compatibility"""
@@ -221,7 +215,6 @@ async def recommend_general(data: dict):
         "total_results": 2
     }
 
-# Simple recommendation endpoints for Docker version
 @app.post("/recommendations/flights")
 async def get_flight_recommendations(data: dict):
     """Simple flight recommendations endpoint"""
@@ -284,13 +277,11 @@ async def get_hotel_recommendations(data: dict):
         "total_results": 2
     }
 
-# Enhanced chatbot endpoint with travel knowledge
 @app.post("/chat/chat")
 async def chat_enhanced(message: dict):
     """Enhanced chatbot endpoint with travel knowledge"""
     user_message = message.get("message", "").lower()
     
-    # Simple response logic based on keywords
     if "flight" in user_message or "fly" in user_message:
         response = "I can help you find the best flight deals! Try our prediction tool to get accurate price estimates for your journey."
     elif "hotel" in user_message or "stay" in user_message:
@@ -314,7 +305,6 @@ async def chat_enhanced(message: dict):
         ]
     }
 
-# Additional chat endpoints
 @app.post("/chat/send")
 async def chat_send(message: dict):
     """Alternative chat endpoint"""
@@ -334,7 +324,6 @@ async def get_chat_history():
         "total_messages": 1
     }
 
-# Simple prediction endpoint
 @app.post("/predict/predict/single")
 async def predict_simple(data: dict):
     """Simple prediction endpoint"""

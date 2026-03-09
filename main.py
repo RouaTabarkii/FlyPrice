@@ -6,23 +6,20 @@ from backend.auth import auth_app
 from backend.recommendation import recommendation_app
 from backend.chatbot import chatbot_app
 
-# Create main FastAPI app
 app = FastAPI(
     title="Flight Price Prediction System",
     description="Complete flight price prediction and travel assistance system",
     version="1.0.0"
 )
 
-# CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify actual origins
+    allow_origins=["*"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Mount sub-applications
 app.mount("/predict", prediction_app)
 app.mount("/auth", auth_app)
 app.mount("/recommend", recommendation_app)
