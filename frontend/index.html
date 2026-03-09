@@ -135,7 +135,6 @@
         <div id="success" class="success"></div>
         <div id="spinner" class="spinner">Processing...</div>
 
-        <!-- Login Form -->
         <form id="login-form">
             <div class="form-group">
                 <label>Username</label>
@@ -148,7 +147,6 @@
             <button type="submit">Login</button>
         </form>
 
-        <!-- Register Form -->
         <form id="register-form" class="hidden">
             <div class="form-group">
                 <label>Username</label>
@@ -169,7 +167,6 @@
     <script>
         const API_BASE = 'http://localhost:8000';
 
-        // Check if already logged in
         if (localStorage.getItem('authToken')) {
             window.location.href = '/app.html';
         }
@@ -212,7 +209,6 @@
             document.querySelectorAll('button').forEach(b => b.disabled = loading);
         }
 
-        // Login
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             setLoading(true);
@@ -244,7 +240,6 @@
             }
         });
 
-        // Register
         document.getElementById('register-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             setLoading(true);

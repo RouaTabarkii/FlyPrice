@@ -219,11 +219,11 @@
     </nav>
 
     <div class="container">
-        <h1 class="page-title">✈️ Flight Recommendations</h1>
+        <h1 class="page-title">Flight Recommendations</h1>
         <p class="page-subtitle">Find the best flights tailored to your preferences</p>
 
         <div class="search-card">
-            <h3 style="margin-bottom: 20px; color: #333;">🔍 Search Flights</h3>
+            <h3 style="margin-bottom: 20px; color: #333;">Search Flights</h3>
             
             <div class="popular-routes">
                 <h4>Popular Routes (click to auto-fill):</h4>
@@ -446,7 +446,6 @@
             }
         }
 
-        // Set default date
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         document.getElementById('departure_date').value = tomorrow.toISOString().split('T')[0];

@@ -209,7 +209,7 @@
 </head>
 <body>
     <nav class="navbar">
-        <h1>✈️ Flight Price Predictor</h1>
+        <h1> Flight Price Predictor</h1>
         <div class="nav-links">
             <a href="app.html">Dashboard</a>
             <a href="prediction.html" class="active">Prediction</a>
@@ -220,7 +220,7 @@
     </nav>
 
     <div class="container">
-        <h1 class="page-title">🎯 Flight Price Prediction</h1>
+        <h1 class="page-title">Flight Price Prediction</h1>
         <p class="page-subtitle">Use our XGBoost ML model to predict flight prices with 87% accuracy</p>
 
         <div class="grid">
@@ -228,7 +228,7 @@
                 <h3>Enter Flight Details</h3>
                 
                 <div class="info-box">
-                    <p>💡 Select your cities from the dropdowns. Distance and duration will be estimated automatically.</p>
+                    <p>Select your cities from the dropdowns. Distance and duration will be estimated automatically.</p>
                 </div>
 
                 <div class="popular-routes">
@@ -386,7 +386,6 @@
     <script>
         const API_BASE = 'http://localhost:8000';
 
-        // City coordinates and airport mapping
         const cityData = {
             'New York': { lat: 40.7128, lon: -74.0060, airport: 'JFK', country: 'USA' },
             'Los Angeles': { lat: 34.0522, lon: -118.2437, airport: 'LAX', country: 'USA' },
@@ -408,7 +407,6 @@
             'Bangkok': { lat: 13.7563, lon: 100.5018, airport: 'BKK', country: 'Thailand' }
         };
 
-        // Haversine formula to calculate distance
         function calculateDistance(lat1, lon1, lat2, lon2) {
             const R = 6371;
             const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -558,7 +556,6 @@
             }
         });
 
-        // Set default date to tomorrow
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         document.getElementById('flight_date').value = tomorrow.toISOString().split('T')[0];
